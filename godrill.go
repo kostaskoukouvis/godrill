@@ -19,6 +19,23 @@ var (
 // The API key, used globally
 var Key string
 
+type EmailSendResponse []EmailSendResponseItem
+
+type EmailSendResponseItem struct {
+	Email        string `json:"email"`
+	Status       string `json:"status"`
+	RejectReason string `json:"reject_reason"`
+	ID           string `json:"_id"`
+}
+
+type EmailSendErrorResponse struct {
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Name    string `json:"name"`
+	Message string `json:"message"`
+}
+
+// request makes a http request to the mandrill API
 func request(method, path string, body io.Reader) (*http.Response, error) {
 	url := fmt.Sprintf("%s/%s", apiURL, path)
 	req, err := http.NewRequest(method, url, body)
@@ -36,20 +53,4 @@ func request(method, path string, body io.Reader) (*http.Response, error) {
 	}
 
 	return res, err
-}
-
-type EmailSendResponse []EmailSendResponseItem
-
-type EmailSendResponseItem struct {
-	Email        string `json:"email"`
-	Status       string `json:"status"`
-	RejectReason string `json:"reject_reason"`
-	ID           string `json:"_id"`
-}
-
-type EmailSendErrorResponse struct {
-	Status  string `json:"status"`
-	Code    int    `json:"code"`
-	Name    string `json:"name"`
-	Message string `json:"message"`
 }

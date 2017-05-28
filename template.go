@@ -34,7 +34,7 @@ type To struct {
 	Type  string `json:"type"`
 }
 
-type MergeVar struct {
+type mergeVar struct {
 	Recipient string `json:"rcpt"`
 	Vars      []*Var `json:"vars"`
 }
@@ -44,6 +44,8 @@ type Var struct {
 	Content interface{} `json:"content"`
 }
 
+// NewTemplateEmail returns a new email using the specified
+// template. It initializes it with the global API key.
 func NewTemplateEmail(name string) (*TemplateEmail, error) {
 	if Key == "" {
 		return nil, ErrNotInitialized
@@ -53,6 +55,7 @@ func NewTemplateEmail(name string) (*TemplateEmail, error) {
 	return email, nil
 }
 
+// SetTemplateContent sets the template's editable regions.
 func (e *TemplateEmail) SetTemplateContent(content ...string) error {
 	if e.TemplateName == "" {
 		return ErrNoTemplateName
@@ -66,15 +69,19 @@ func (e *TemplateEmail) SetTemplateContent(content ...string) error {
 	return nil
 }
 
+// SetSubject sets the subject of the message.
 func (e *TemplateEmail) SetSubject(subject string) {
 	e.Message.Subject = subject
 }
 
+// SetFrom sets the from information.
 func (e *TemplateEmail) SetFrom(email, name string) {
 	e.Message.FromEmail = email
 	e.Message.FromName = name
 }
 
+// SetRecipient sets the recipients email & name, along with any personalized
+// merge variables that are provided.
 func (e *TemplateEmail) SetRecipient(email, name string, args ...interface{}) error {
 	to := &To{
 		Email: email,
@@ -96,24 +103,53 @@ func (e *TemplateEmail) SetRecipient(email, name string, args ...interface{}) er
 	return nil
 }
 
-func (e *TemplateEmail) SetCC(email, name string) {
+// SetCC sets the email & name for the persons CC'ed in the email
+// along with any personalized merge variables that are provided.
+func (e *TemplateEmail) SetCC(email, name string, args ...interface{}) error {
 	to := &To{
 		Email: email,
 		Name:  name,
 		Type:  "cc",
 	}
-	e.Message.To = append(e.Message.To, to)
+  e.Message.To = append(e.Message.To, to)
+  if len(args) > 1 {
+    vars, err := formatVar(args)
+    if err != nil {
+      return err
+    }
+    mergeVar := &MergeVar{
+      Recipient: email,
+      Vars:      vars,
+    }
+    e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
+  }
+  return nil
 }
 
-func (e *TemplateEmail) SetBCC(email, name string) {
+// SetBCC sets the email & name for the persons BCC'ed in the email
+// along with any personalized merge variables that are provided.
+func (e *TemplateEmail) SetBCC(email, name string, args ...interface{}) error {
 	to := &To{
 		Email: email,
 		Name:  name,
 		Type:  "bcc",
 	}
-	e.Message.To = append(e.Message.To, to)
+  e.Message.To = append(e.Message.To, to)
+  if len(args) > 1 {
+    vars, err := formatVar(args)
+    if err != nil {
+      return err
+    }
+    mergeVar := &MergeVar{
+      Recipient: email,
+      Vars:      vars,
+    }
+    e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
+  }
+  return nil
 }
 
+// SetGlobalMergeVars sets the global merge variables for the email.
 func (e *TemplateEmail) SetGlobalMergeVars(value ...interface{}) error {
 	vars, err := formatVar(value)
 	if err != nil {
@@ -124,6 +160,8 @@ func (e *TemplateEmail) SetGlobalMergeVars(value ...interface{}) error {
 	return nil
 }
 
+// Send calls the /messages/send-template.json endpoint of the mandrill API
+// sending the current email.
 func (e *TemplateEmail) Send() (*EmailSendResponse, *EmailSendErrorResponse, error) {
 	sendTemplatePath := "messages/send-template.json"
 	emailBytes, err := json.Marshal(e)
