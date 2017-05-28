@@ -38,7 +38,9 @@ func request(method, path string, body io.Reader) (*http.Response, error) {
 	return res, err
 }
 
-type EmailSendResponse struct {
+type EmailSendResponse []EmailSendResponseItem
+
+type EmailSendResponseItem struct {
 	Email        string `json:"email"`
 	Status       string `json:"status"`
 	RejectReason string `json:"reject_reason"`

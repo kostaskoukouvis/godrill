@@ -20,12 +20,12 @@ type TemplateContent struct {
 }
 
 type Message struct {
-	Subject         string     `json:"subject"`
-	To              []*To      `json:"to"`
-	FromName        string     `json:"from_name"`
-	FromEmail       string     `json:"from_email"`
-	MergeVars       *MergeVars `json:"merge_vars"`
-	GlobalMergeVars []*Var     `json:"global_merge_vars"`
+	Subject         string      `json:"subject"`
+	To              []*To       `json:"to"`
+	FromName        string      `json:"from_name"`
+	FromEmail       string      `json:"from_email"`
+	MergeVars       []*MergeVar `json:"merge_vars"`
+	GlobalMergeVars []*Var      `json:"global_merge_vars"`
 }
 
 type To struct {
@@ -34,7 +34,7 @@ type To struct {
 	Type  string `json:"type"`
 }
 
-type MergeVars struct {
+type MergeVar struct {
 	Recipient string `json:"rcpt"`
 	Vars      []*Var `json:"vars"`
 }
@@ -75,13 +75,25 @@ func (e *TemplateEmail) SetFrom(email, name string) {
 	e.Message.FromName = name
 }
 
-func (e *TemplateEmail) SetRecipient(email, name string) {
+func (e *TemplateEmail) SetRecipient(email, name string, args ...interface{}) error {
 	to := &To{
 		Email: email,
 		Name:  name,
 		Type:  "to",
 	}
 	e.Message.To = append(e.Message.To, to)
+	if len(args) > 1 {
+		vars, err := formatVar(args)
+		if err != nil {
+			return err
+		}
+		mergeVar := &MergeVar{
+			Recipient: email,
+			Vars:      vars,
+		}
+		e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
+	}
+	return nil
 }
 
 func (e *TemplateEmail) SetCC(email, name string) {
