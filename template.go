@@ -34,7 +34,7 @@ type To struct {
 	Type  string `json:"type"`
 }
 
-type mergeVar struct {
+type MergeVar struct {
 	Recipient string `json:"rcpt"`
 	Vars      []*Var `json:"vars"`
 }
@@ -111,19 +111,19 @@ func (e *TemplateEmail) SetCC(email, name string, args ...interface{}) error {
 		Name:  name,
 		Type:  "cc",
 	}
-  e.Message.To = append(e.Message.To, to)
-  if len(args) > 1 {
-    vars, err := formatVar(args)
-    if err != nil {
-      return err
-    }
-    mergeVar := &MergeVar{
-      Recipient: email,
-      Vars:      vars,
-    }
-    e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
-  }
-  return nil
+	e.Message.To = append(e.Message.To, to)
+	if len(args) > 1 {
+		vars, err := formatVar(args)
+		if err != nil {
+			return err
+		}
+		mergeVar := &MergeVar{
+			Recipient: email,
+			Vars:      vars,
+		}
+		e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
+	}
+	return nil
 }
 
 // SetBCC sets the email & name for the persons BCC'ed in the email
@@ -134,19 +134,19 @@ func (e *TemplateEmail) SetBCC(email, name string, args ...interface{}) error {
 		Name:  name,
 		Type:  "bcc",
 	}
-  e.Message.To = append(e.Message.To, to)
-  if len(args) > 1 {
-    vars, err := formatVar(args)
-    if err != nil {
-      return err
-    }
-    mergeVar := &MergeVar{
-      Recipient: email,
-      Vars:      vars,
-    }
-    e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
-  }
-  return nil
+	e.Message.To = append(e.Message.To, to)
+	if len(args) > 1 {
+		vars, err := formatVar(args)
+		if err != nil {
+			return err
+		}
+		mergeVar := &MergeVar{
+			Recipient: email,
+			Vars:      vars,
+		}
+		e.Message.MergeVars = append(e.Message.MergeVars, mergeVar)
+	}
+	return nil
 }
 
 // SetGlobalMergeVars sets the global merge variables for the email.
